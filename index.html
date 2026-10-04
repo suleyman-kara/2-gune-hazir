@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kaptan Mert mi?</title>
+<title>2 Güne Hazır</title>
 <meta name="description" content="Mert oyunu ne zaman teslim edecek? Canlı sayaç.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,11 +109,11 @@
   @keyframes idle { 50% { transform: scaleX(-1) translateY(2px); } }
   .smoke { position: absolute; top: 40px; font-size: 1rem; opacity: .7; animation: smoke 1.6s ease-out infinite; }
   @keyframes smoke { from { transform: translate(0,0); opacity: .8; } to { transform: translate(-26px,-26px) scale(1.8); opacity: 0; } }
-  .track-label { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: .5rem; color: var(--muted); margin-top: 10px; }
+  .track-label { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: .5rem; color: var(--muted); margin: 10px 0 16px; }
 
   /* ---- sayaçlar (HUD) ---- */
   .hud-title { font-family: var(--pixel); font-size: .6rem; margin: 0 0 12px; color: var(--yellow); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-  .hud-title + .timer { margin-bottom: 20px; }
+  .hud-title + .timer { margin-bottom: 4px; }
   .timer { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
   .timer div { background: #000; border: 2px solid var(--cyan); padding: 12px 2px 8px; box-shadow: inset 0 0 14px rgba(25,240,255,.25); }
   .timer b { display: block; font-family: var(--pixel); font-weight: 400; font-size: clamp(1rem, 5.5vw, 1.8rem); color: var(--cyan); text-shadow: 0 0 10px var(--cyan); font-variant-numeric: tabular-nums; }
@@ -184,13 +184,6 @@
   ol.guesses .empty::before { content: none; }
   .note { color: var(--muted); font-size: .75rem; margin: 12px 0 0; }
 
-  /* ---- bahis ---- */
-  .votes { display: grid; gap: 14px; }
-  .vote { position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 8px; text-align: left; }
-  .vote i { position: absolute; inset: 0 auto 0 0; background: rgba(0,0,0,.28); width: 0; transition: width .4s; }
-  .vote span { position: relative; }
-  .vote.mine::after { content: "◀ SEÇİLDİ"; position: absolute; right: 10px; top: -1px; font-size: .45rem; color: #fff; background: #000; padding: 2px 4px; }
-
   /* ---- mazeret slotu ---- */
   .slot { background: #000; border: 3px solid var(--pink); min-height: 92px; display: grid; place-items: center; padding: 14px; text-align: center; margin-bottom: 14px; font-size: 1.05rem; font-weight: 600; box-shadow: inset 0 0 22px rgba(255,46,147,.35); }
   .slot.spin { color: var(--muted); filter: blur(1px); }
@@ -220,13 +213,17 @@
 <main>
   <header class="hero">
     <div class="insert">▶ INSERT COIN ◀</div>
-    <h1>KAPTAN<br><em>MERT</em> Mİ?</h1>
-    <p class="sub">1.5 Adana Formula Student · Oyun Birimi · Pitwall</p>
+    <h1>2 GÜNE<br><em>HAZIR</em></h1>
+    <p class="sub">1.5 Adana Formula Student · Oyun Birimi</p>
   </header>
 
-  <!-- Pist -->
-  <section class="panel pink">
-    <span class="tag">PİST</span>
+  <!-- 1. Sayaçlar / tamamlanma -->
+  <section class="panel" id="timers"></section>
+
+  <!-- 3. Pist + oyun yükleniyor -->
+  <section class="panel green">
+    <span class="tag">YÜKLENİYOR</span>
+    <p class="loadname">PITWALL_OYUN.EXE</p>
     <div class="track stuck" id="track">
       <div class="lane"></div>
       <div class="finish"></div>
@@ -234,10 +231,9 @@
       <div class="car" id="car">🏎️</div>
     </div>
     <div class="track-label"><span>START</span><span id="trackNote">MERT HÂLÂ BOKSTA</span><span>FINISH</span></div>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="bar-label"><span id="barPct">%0</span><span id="barNote">TAHMİNİ BİTİŞ: BELİRSİZ</span></div>
   </section>
-
-  <!-- 1. Sayaçlar / tamamlanma -->
-  <section class="panel" id="timers"></section>
 
   <!-- 2. WhatsApp -->
   <section class="panel pink">
@@ -255,14 +251,6 @@
     </div>
   </section>
 
-  <!-- 3. Pitwall durumu -->
-  <section class="panel green">
-    <span class="tag">YÜKLENİYOR</span>
-    <p class="loadname">PITWALL_OYUN.EXE</p>
-    <div class="bar"><i id="barFill"></i></div>
-    <div class="bar-label"><span id="barPct">%0</span><span id="barNote">TAHMİNİ BİTİŞ: BELİRSİZ</span></div>
-  </section>
-
   <!-- 4. Tahmin oyunu -->
   <section class="panel yellow">
     <span class="tag">SKOR TABLOSU</span>
@@ -274,14 +262,6 @@
     </div>
     <ol class="guesses" id="guessList"></ol>
     <p class="note">Tahminler sadece bu tarayıcıda saklanır.</p>
-  </section>
-
-  <!-- 5. Bahis -->
-  <section class="panel">
-    <span class="tag">BAHİS MASASI</span>
-    <p class="hud-title">MERT NE YAPAR?</p>
-    <div class="votes" id="votes"></div>
-    <p class="note">Oylar sadece bu tarayıcıda sayılır.</p>
   </section>
 
   <!-- 6. Mazeret üretici -->
@@ -369,7 +349,6 @@ function renderTimers() {
   $("timers").className = "panel" + (late ? " late" : "");
   $("timers").innerHTML = `
     <span class="tag">${late ? "⚠ UYARI" : "HUD"}</span>
-    <p class="hud-title">SÖZDEN BU YANA GEÇEN SÜRE</p>${timerHTML(sincePromise, false)}
     <p class="hud-title">${late ? "TESLİM SÜRESİ AŞILDI" : "TESLİME KALAN SÜRE"}${late ? '<span class="badge">GECİKME</span>' : ""}</p>
     ${timerHTML(late ? overdue : -overdue, late)}
     ${late ? `<div class="gameover"><div class="go">GAME OVER</div><div class="continue">DEVAM? ${continueN}</div></div>` : ""}`;
@@ -426,7 +405,7 @@ function initChat() {
 let sending = false;
 $("sendBtn").addEventListener("click", () => {
   if (sending) return;
-  sending = true; $("sendBtn").disabled = true;
+  sending = true; $("sendBtn").disabled = true; // yalnızca 1 kez
   bubble(DONE ? "Tebrikler kaptan! 🎉" : "Oyun ne durumda?", hhmm(new Date()), true);
   const t = document.createElement("div");
   t.className = "msg typing"; t.textContent = "Mert yazıyor…";
@@ -434,8 +413,7 @@ $("sendBtn").addEventListener("click", () => {
   setTimeout(() => {
     t.remove();
     bubble(DONE ? "Sağ ol, söz verdim yaptım 😎" : "2 güne hazır", hhmm(new Date()));
-    sending = false; $("sendBtn").disabled = false;
-    unlock("ask");
+    unlock("ask"); // buton sayfa yenilenene kadar kapalı kalır
   }, 2500);
 });
 
@@ -505,30 +483,6 @@ $("gBtn").addEventListener("click", () => {
   unlock("guess");
 });
 
-/* ---------- 5. Bahis ---------- */
-const OPTIONS = [["yes", "TESLİM EDER 🏁", "green"], ["no", "ETMEZ 🙈", "pink"], ["gone", "BİR DAHA KONUŞULMAZ 👻", "cyan"]];
-let myVote = store.get("myVote", null);
-let tally = store.get("tally", { yes: 0, no: 0, gone: 0 });
-function renderVotes() {
-  const total = Object.values(tally).reduce((a, b) => a + b, 0);
-  $("votes").innerHTML = "";
-  OPTIONS.forEach(([key, label, color]) => {
-    const pct = total ? Math.round((tally[key] / total) * 100) : 0;
-    const b = document.createElement("button");
-    b.className = `btn vote ${color}` + (myVote === key ? " mine" : "");
-    b.innerHTML = `<i style="width:${pct}%"></i><span>${label}</span><span>%${pct} (${tally[key]})</span>`;
-    b.addEventListener("click", () => {
-      if (myVote) tally[myVote]--;
-      myVote = myVote === key ? null : key;
-      if (myVote) tally[myVote]++;
-      store.set("myVote", myVote); store.set("tally", tally);
-      renderVotes();
-      if (myVote) unlock("bet");
-    });
-    $("votes").appendChild(b);
-  });
-}
-
 /* ---------- 6. Mazeret makinesi ---------- */
 const EXCUSES = [
   "Vize haftası, oyun bekleyebilir.",
@@ -574,7 +528,6 @@ const ACH = [
   { id: "late",   icon: "⏰", name: "GEÇ KALDI",        desc: "Mert süreyi kaçırdı.", auto: () => !DONE && new Date() > DEADLINE_AT, bad: true },
   { id: "ask",    icon: "💬", name: "SORMAYA DEVAM",   desc: "Mert'e mesaj attın." },
   { id: "guess",  icon: "🔮", name: "KAHİN",            desc: "Bir tahmin yaptın." },
-  { id: "bet",    icon: "🎲", name: "BAHİSÇİ",          desc: "Bir bahis oynadın." },
   { id: "excuse", icon: "🎰", name: "MAZERET AVCISI",   desc: "Mazeret makinesini çevirdin." },
   { id: "done",   icon: "🏆", name: "SÖZÜNÜ TUTTU",     desc: "Mert oyunu teslim etti!", auto: () => !!DONE },
 ];
@@ -624,7 +577,6 @@ function confetti() {
 /* ---------- başlat ---------- */
 initChat();
 renderGuesses();
-renderVotes();
 renderTimers();
 renderBar();
 renderAch();
