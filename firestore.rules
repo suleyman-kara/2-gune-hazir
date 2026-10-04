@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /guesses/{uid} {
+      // Herkes tahminleri okuyabilir.
+      allow read: if true;
+
+      // Her anonim kullanıcı (tarayıcı) kendi uid'siyle yalnızca 1 belge oluşturabilir.
+      // Güncelleme ve silme yok.
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'date', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 12
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('^20[0-9]{2}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+  }
+}

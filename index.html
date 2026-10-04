@@ -261,7 +261,7 @@
       <button class="btn" id="gBtn">TAHMİNİ KAYDET</button>
     </div>
     <ol class="guesses" id="guessList"></ol>
-    <p class="note">Tahminler sadece bu tarayıcıda saklanır.</p>
+    <p class="note" id="gNote">Tahmin hakkın 1: kaydedince değiştiremezsin. Tahminler sadece bu tarayıcıda saklanır.</p>
   </section>
 
   <!-- 6. Mazeret üretici -->
@@ -291,6 +291,12 @@
    Boşken null bırak.
    ============================================================ */
 const COMPLETED_AT = null;
+
+/* Firebase (ortak tahmin listesi). Kurulum için FIREBASE_KURULUM.md dosyasına bak.
+   Konsoldan aldığın web config'i buraya yapıştır, örnek:
+     const FIREBASE_CONFIG = { apiKey: "...", authDomain: "...", projectId: "...", appId: "..." };
+   null kalırsa tahmin sadece bu tarayıcıda saklanır (yerel mod). */
+const FIREBASE_CONFIG = null;
 
 const PROMISE_AT  = new Date("2026-09-19T19:43:00+03:00"); // "Peki öyle olsun ben sözümü tutarım"
 const READY_AT    = new Date("2026-09-19T19:44:00+03:00"); // "2 güne hazır"
@@ -441,11 +447,22 @@ const store = {
 };
 
 /* ---------- 4. Tahmin oyunu ---------- */
-let guesses = store.get("guesses", []);
+// Her tarayıcı 1 tahmin yapabilir. Yerel modda tahmin localStorage'da, Firebase modunda
+// Firestore'da (belge kimliği = anonim kullanıcı uid'si) tutulur.
+let backend = null, myUid = null;
+let myLocal = store.get("myGuess", null);
+let guesses = myLocal ? [{ ...myLocal, mine: true }] : [];
+const hasGuessed = () => backend ? guesses.some((g) => g.id === myUid) : !!myLocal;
+function updateForm() {
+  const done = hasGuessed();
+  ["gName", "gDate", "gBtn"].forEach((id) => { $(id).disabled = done; });
+  $("gBtn").textContent = done ? "TAHMİNİN KAYITLI ✔" : "TAHMİNİ KAYDET";
+}
 function renderGuesses() {
   const target = DONE ? DONE.getTime() : null;
   const list = [...guesses];
-  if (target) list.sort((a, b) => Math.abs(new Date(a.date) - target) - Math.abs(new Date(b.date) - target));
+  const dayDiff = (g) => Math.round(Math.abs(new Date(g.date + "T12:00:00+03:00") - target) / 86400000);
+  if (target) list.sort((a, b) => dayDiff(a) - dayDiff(b)); // eşitlikte önce tahmin eden öne geçer (sıralama kararlı)
   else list.sort((a, b) => new Date(a.date) - new Date(b.date));
   $("guessList").innerHTML = "";
   if (!list.length) {
@@ -469,19 +486,45 @@ function renderGuesses() {
     name.textContent = (i === 0 && target ? "🥇 " : "") + g.name.toLocaleUpperCase("tr");
     const when = document.createElement("span");
     when.innerHTML = `${new Date(g.date).toLocaleDateString("tr-TR", { day: "numeric", month: "short" }).toLocaleUpperCase("tr")}<small>${extra}</small>`;
+    if (g.mine || (backend && g.id === myUid)) { li.style.borderLeftColor = "var(--pink)"; name.textContent += " (SEN)"; }
     li.append(name, when);
     $("guessList").appendChild(li);
   });
 }
-$("gBtn").addEventListener("click", () => {
-  const name = $("gName").value.trim(), date = $("gDate").value;
+$("gDate").min = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Istanbul" });
+$("gBtn").addEventListener("click", async () => {
+  if (hasGuessed()) return;
+  const name = $("gName").value.trim().slice(0, 12), date = $("gDate").value;
   if (!name || !date) return;
-  guesses.push({ name, date });
-  store.set("guesses", guesses);
+  if (backend) {
+    $("gBtn").disabled = true;
+    try {
+      await backend.submit(name, date); // listeye onSnapshot ekler
+    } catch (e) {
+      console.warn(e);
+      $("gNote").textContent = "Kaydedilemedi (zaten tahmin yapmış olabilirsin ya da bağlantı sorunu var). Tekrar dene.";
+      updateForm();
+      return;
+    }
+  } else {
+    myLocal = { name, date };
+    store.set("myGuess", myLocal);
+    guesses = [{ ...myLocal, mine: true }];
+  }
   $("gName").value = ""; $("gDate").value = "";
-  renderGuesses();
+  renderGuesses(); updateForm();
   unlock("guess");
 });
+// Firebase modülü hazır olunca çağırır
+window.setGuessBackend = (b) => {
+  backend = b; myUid = b.uid;
+  $("gNote").textContent = "Her tarayıcı 1 tahmin yapabilir, kaydedince değiştirilemez. Tahminleri herkes görür.";
+  b.subscribe((list) => {
+    guesses = list;
+    if (hasGuessed()) unlock("guess");
+    renderGuesses(); updateForm();
+  });
+};
 
 /* ---------- 6. Mazeret makinesi ---------- */
 const EXCUSES = [
@@ -577,11 +620,36 @@ function confetti() {
 /* ---------- başlat ---------- */
 initChat();
 renderGuesses();
+updateForm();
 renderTimers();
 renderBar();
 renderAch();
 if (!DONE) setInterval(() => { renderTimers(); renderBar(); }, 1000);
 if (DONE) confetti();
+</script>
+<script type="module">
+if (FIREBASE_CONFIG) {
+  try {
+    const v = "10.12.2", base = `https://www.gstatic.com/firebasejs/${v}/`;
+    const [{ initializeApp }, { getAuth, signInAnonymously }, fs] = await Promise.all([
+      import(base + "firebase-app.js"), import(base + "firebase-auth.js"), import(base + "firebase-firestore.js"),
+    ]);
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = fs.getFirestore(app);
+    const { user } = await signInAnonymously(getAuth(app));
+    window.setGuessBackend({
+      uid: user.uid,
+      submit: (name, date) => fs.setDoc(fs.doc(db, "guesses", user.uid), { name, date, createdAt: fs.serverTimestamp() }),
+      subscribe: (cb) => fs.onSnapshot(
+        fs.query(fs.collection(db, "guesses"), fs.orderBy("createdAt", "asc"), fs.limit(500)),
+        (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+        (err) => console.warn("Firestore:", err)
+      ),
+    });
+  } catch (e) {
+    console.warn("Firebase bağlanamadı, yerel mod kullanılıyor:", e);
+  }
+}
 </script>
 </body>
 </html>
