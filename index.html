@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaptan Mert mi?</title>
+<meta name="description" content="Mert oyunu ne zaman teslim edecek? Canlı sayaç.">
+<style>
+  :root {
+    --bg: #0b141a;
+    --panel: #111b21;
+    --panel2: #202c33;
+    --text: #e9edef;
+    --muted: #8696a0;
+    --green: #00a884;
+    --in: #202c33;
+    --out: #005c4b;
+    --red: #ff4d4f;
+    --blue: #53bdeb;
+    --chat-bg: #0b141a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #e9e4dc;
+      --panel: #ffffff;
+      --panel2: #f0f2f5;
+      --text: #111b21;
+      --muted: #667781;
+      --in: #ffffff;
+      --out: #d9fdd3;
+      --chat-bg: #efeae2;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.4;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; display: grid; gap: 20px; }
+  h1 { font-size: 1.5rem; margin: 8px 0 0; text-align: center; }
+  .sub { text-align: center; color: var(--muted); margin: 0; font-size: .9rem; }
+  .card { background: var(--panel); border-radius: 14px; padding: 18px; }
+  .card h2 { margin: 0 0 12px; font-size: 1rem; color: var(--muted); font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
+
+  /* counters */
+  .timer { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+  .timer div { background: var(--panel2); border-radius: 10px; padding: 12px 4px; }
+  .timer b { display: block; font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+  .timer span { font-size: .75rem; color: var(--muted); }
+  .late .timer b { color: var(--red); }
+  .badge {
+    display: inline-block; background: var(--red); color: #fff; font-weight: 700;
+    padding: 2px 10px; border-radius: 999px; font-size: .75rem; margin-left: 8px;
+    animation: blink 1s steps(2, start) infinite;
+  }
+  @keyframes blink { to { visibility: hidden; } }
+  .done-banner { text-align: center; }
+  .done-banner .big { font-size: 1.4rem; font-weight: 700; margin: 6px 0; }
+  .done-banner .small { color: var(--muted); font-size: .9rem; }
+
+  /* whatsapp */
+  .wa { padding: 0; overflow: hidden; }
+  .wa-head { background: var(--panel2); display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green); display: grid; place-items: center; font-weight: 700; color: #fff; }
+  .wa-head .name { font-weight: 600; }
+  .wa-head .status { font-size: .75rem; color: var(--muted); }
+  .wa-body {
+    background: var(--chat-bg); padding: 14px 12px; display: flex; flex-direction: column; gap: 6px;
+    min-height: 220px; max-height: 420px; overflow-y: auto;
+  }
+  .day { align-self: center; background: var(--panel2); color: var(--muted); font-size: .72rem; padding: 3px 10px; border-radius: 8px; }
+  .sys { align-self: center; background: #1f2c34; color: #ffd279; font-size: .72rem; padding: 4px 10px; border-radius: 8px; text-align: center; max-width: 90%; }
+  @media (prefers-color-scheme: light) { .sys { background: #fff5c4; color: #54656f; } }
+  .msg { max-width: 82%; padding: 6px 9px 4px; border-radius: 8px; background: var(--in); position: relative; word-wrap: break-word; }
+  .msg.out { align-self: flex-end; background: var(--out); }
+  .msg .meta { float: right; margin: 6px 0 0 10px; font-size: .68rem; color: var(--muted); }
+  .msg .tick { color: var(--blue); margin-left: 3px; }
+  .typing { color: var(--muted); font-style: italic; font-size: .85rem; }
+  .wa-foot { background: var(--panel2); padding: 10px 14px; }
+  button {
+    font: inherit; cursor: pointer; border: 0; border-radius: 999px; padding: 10px 16px;
+    background: var(--green); color: #fff; font-weight: 600;
+  }
+  button.ghost { background: var(--panel2); color: var(--text); }
+  button:disabled { opacity: .5; cursor: default; }
+  .wa-foot button { width: 100%; }
+
+  /* pitwall progress */
+  .bar { height: 22px; background: var(--panel2); border-radius: 999px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; min-width: 3px; background: linear-gradient(90deg, var(--red), #ffb020); }
+  .bar-label { display: flex; justify-content: space-between; margin-top: 8px; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* guess + vote */
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  input {
+    font: inherit; background: var(--panel2); color: var(--text); border: 1px solid transparent;
+    border-radius: 10px; padding: 10px 12px; min-width: 0; flex: 1 1 140px;
+  }
+  input:focus { outline: 2px solid var(--green); }
+  ol.guesses { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  ol.guesses li { display: flex; justify-content: space-between; gap: 8px; background: var(--panel2); border-radius: 10px; padding: 8px 12px; font-size: .9rem; }
+  ol.guesses li.win { outline: 2px solid var(--green); }
+  ol.guesses small { color: var(--muted); }
+  .note { color: var(--muted); font-size: .78rem; margin: 10px 0 0; }
+  .votes { display: grid; gap: 10px; }
+  .vote { position: relative; text-align: left; border-radius: 10px; background: var(--panel2); color: var(--text); padding: 12px; overflow: hidden; display: flex; justify-content: space-between; font-weight: 600; }
+  .vote i { position: absolute; inset: 0 auto 0 0; background: var(--green); opacity: .3; width: 0; transition: width .4s; }
+  .vote span { position: relative; }
+  .vote.mine { outline: 2px solid var(--green); }
+  .excuse { font-size: 1.1rem; min-height: 3.2em; margin: 0 0 12px; }
+
+  canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  footer { text-align: center; color: var(--muted); font-size: .75rem; }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<main>
+  <header>
+    <h1>Kaptan Mert mi? 🏎️</h1>
+    <p class="sub">1.5 Adana Formula Student · Oyun Birimi · Pitwall</p>
+  </header>
+
+  <!-- 1. Sayaçlar / tamamlanma -->
+  <section class="card" id="timers"></section>
+
+  <!-- 2. WhatsApp -->
+  <section class="card wa">
+    <div class="wa-head">
+      <div class="avatar">M</div>
+      <div>
+        <div class="name">Mert (Oyun Birimi Kaptanı)</div>
+        <div class="status" id="waStatus">son görülme: 19 Eylül 19:44</div>
+      </div>
+    </div>
+    <div class="wa-body" id="chat"></div>
+    <div class="wa-foot"><button id="sendBtn">Mert'e mesaj at: "Oyun ne durumda?"</button></div>
+  </section>
+
+  <!-- 3. Pitwall durumu -->
+  <section class="card">
+    <h2>Pitwall oyun yüklenme durumu</h2>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="bar-label"><span id="barPct">%0</span><span id="barNote">tahmini bitiş: belirsiz</span></div>
+  </section>
+
+  <!-- 4. Tahmin oyunu -->
+  <section class="card">
+    <h2>Tahmin oyunu: Mert oyunu ne zaman teslim edecek?</h2>
+    <div class="row">
+      <input id="gName" placeholder="Adın" maxlength="20">
+      <input id="gDate" type="date">
+      <button id="gBtn">Tahmin et</button>
+    </div>
+    <ol class="guesses" id="guessList"></ol>
+    <p class="note">Tahminler sadece bu tarayıcıda saklanır.</p>
+  </section>
+
+  <!-- 5. Bahis -->
+  <section class="card">
+    <h2>Bahis: Mert ne yapar?</h2>
+    <div class="votes" id="votes"></div>
+    <p class="note">Oylar sadece bu tarayıcıda sayılır.</p>
+  </section>
+
+  <!-- 6. Mazeret üretici -->
+  <section class="card">
+    <h2>Mazeret üretici</h2>
+    <p class="excuse" id="excuse">Mert'in bir sonraki bahanesi için butona bas.</p>
+    <button id="excuseBtn">Mazeret üret</button>
+  </section>
+
+  <footer>Şaka amaçlıdır, Mert'i seviyoruz. 💚</footer>
+</main>
+
+<script>
+/* ============================================================
+   AYARLAR
+   ============================================================
+   Mert oyunu bitirdiğinde COMPLETED_AT değerini doldur, örnek:
+     const COMPLETED_AT = "2026-10-12T21:30:00+03:00";
+   Doluysa sayaçlar durur, site her açıldığında konfeti patlar ve
+   "Mert oyunu şu kadar sürede tamamladı" yazar.
+   Boşken null bırak.
+   ============================================================ */
+const COMPLETED_AT = null;
+
+const PROMISE_AT  = new Date("2026-09-19T19:43:00+03:00"); // "Peki öyle olsun ben sözümü tutarım"
+const READY_AT    = new Date("2026-09-19T19:44:00+03:00"); // "2 güne hazır"
+const DEADLINE_AT = new Date("2026-09-21T19:44:00+03:00"); // 2 gün sonrası
+const DONE = COMPLETED_AT ? new Date(COMPLETED_AT) : null;
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+
+function split(ms) {
+  const neg = ms < 0;
+  let s = Math.floor(Math.abs(ms) / 1000);
+  const d = Math.floor(s / 86400); s %= 86400;
+  const h = Math.floor(s / 3600);  s %= 3600;
+  const m = Math.floor(s / 60);    s %= 60;
+  return { neg, d, h, m, s };
+}
+function timerHTML(ms) {
+  const t = split(ms);
+  return `<div class="timer">
+    <div><b>${t.d}</b><span>gün</span></div>
+    <div><b>${pad(t.h)}</b><span>saat</span></div>
+    <div><b>${pad(t.m)}</b><span>dakika</span></div>
+    <div><b>${pad(t.s)}</b><span>saniye</span></div></div>`;
+}
+function humanDuration(ms) {
+  const t = split(ms);
+  const parts = [];
+  if (t.d) parts.push(`${t.d} gün`);
+  if (t.h) parts.push(`${t.h} saat`);
+  if (t.m) parts.push(`${t.m} dakika`);
+  if (!parts.length || t.s) parts.push(`${t.s} saniye`);
+  return parts.join(" ");
+}
+const trDate = (d) => d.toLocaleString("tr-TR", { timeZone: "Europe/Istanbul", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+/* ---------- 1. Sayaçlar ---------- */
+function renderTimers() {
+  const now = DONE || new Date();
+  const sincePromise = now - PROMISE_AT;
+  const overdue = now - DEADLINE_AT;
+  if (DONE) {
+    const early = DONE <= DEADLINE_AT;
+    $("timers").className = "card done-banner";
+    $("timers").innerHTML = `
+      <div style="font-size:2.4rem">🏁🎉</div>
+      <div class="big">Mert oyunu ${humanDuration(sincePromise)} sürede tamamladı!</div>
+      <div class="small">Söz: ${trDate(PROMISE_AT)} · Teslim: ${trDate(DONE)}</div>
+      <div class="small">${early
+        ? "Süre dolmadan teslim etti, kaptanlığı hak etti. 👑"
+        : `Verdiği süreyi ${humanDuration(overdue)} aştı ama sonunda yaptı. 🫡`}</div>`;
+    return;
+  }
+  const late = overdue > 0;
+  $("timers").className = "card" + (late ? " late" : "");
+  $("timers").innerHTML = `
+    <h2>Sözden bu yana geçen süre</h2>${timerHTML(sincePromise)}
+    <h2 style="margin-top:18px">${late ? "Teslim süresi aşıldı" : "Teslime kalan süre"}${late ? '<span class="badge">GECİKME</span>' : ""}</h2>
+    ${timerHTML(late ? overdue : -overdue)}`;
+}
+
+/* ---------- 2. WhatsApp ---------- */
+const hhmm = (d) => d.toLocaleTimeString("tr-TR", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" });
+function bubble(text, time, out) {
+  const el = document.createElement("div");
+  el.className = "msg" + (out ? " out" : "");
+  el.innerHTML = `${text}<span class="meta">${time}${out ? '<span class="tick">✓✓</span>' : ""}</span>`;
+  $("chat").appendChild(el);
+  $("chat").scrollTop = $("chat").scrollHeight;
+  return el;
+}
+function sysMsg(text) {
+  const el = document.createElement("div");
+  el.className = "sys"; el.textContent = text;
+  $("chat").appendChild(el);
+  return el;
+}
+function initChat() {
+  const day = document.createElement("div");
+  day.className = "day"; day.textContent = "19 Eylül 2026";
+  $("chat").appendChild(day);
+  bubble("Peki öyle olsun ben sözümü tutarım", hhmm(PROMISE_AT));
+  bubble("2 güne hazır", hhmm(READY_AT));
+  if (DONE) {
+    sysMsg(`✅ Mert oyunu tamamladı · ${trDate(DONE)}`);
+    $("waStatus").textContent = "çevrimiçi";
+  } else {
+    const days = Math.floor((new Date() - READY_AT) / 86400000);
+    sysMsg(`⏳ Mert ${days} gündür bu mesajdan sonra oyun teslim etmedi`);
+  }
+}
+let sending = false;
+$("sendBtn").addEventListener("click", () => {
+  if (sending) return;
+  sending = true; $("sendBtn").disabled = true;
+  bubble(DONE ? "Tebrikler kaptan! 🎉" : "Oyun ne durumda?", hhmm(new Date()), true);
+  const t = document.createElement("div");
+  t.className = "msg typing"; t.textContent = "Mert yazıyor…";
+  setTimeout(() => $("chat").appendChild(t), 700);
+  setTimeout(() => {
+    t.remove();
+    bubble(DONE ? "Sağ ol, söz verdim yaptım 😎" : "2 güne hazır", hhmm(new Date()));
+    sending = false; $("sendBtn").disabled = false;
+    $("chat").scrollTop = $("chat").scrollHeight;
+  }, 2500);
+});
+
+/* ---------- 3. Pitwall durumu ---------- */
+function renderBar() {
+  if (DONE) {
+    $("barFill").style.width = "100%";
+    $("barFill").style.background = "var(--green)";
+    $("barPct").textContent = "%100";
+    $("barNote").textContent = "yükleme tamamlandı 🏆";
+    return;
+  }
+  const elapsedS = (new Date() - READY_AT) / 1000;
+  const pct = elapsedS * 1e-7; // absürt derecede yavaş
+  $("barFill").style.width = Math.max(pct, 0.3) + "%";
+  $("barPct").textContent = "%" + pct.toFixed(6).replace(".", ",");
+  $("barNote").textContent = "tahmini bitiş: belirsiz";
+}
+
+/* ---------- yardımcı: localStorage ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+/* ---------- 4. Tahmin oyunu ---------- */
+let guesses = store.get("guesses", []);
+function renderGuesses() {
+  const target = DONE ? DONE.getTime() : null;
+  const list = [...guesses];
+  if (target) list.sort((a, b) => Math.abs(new Date(a.date) - target) - Math.abs(new Date(b.date) - target));
+  else list.sort((a, b) => new Date(a.date) - new Date(b.date));
+  $("guessList").innerHTML = "";
+  list.forEach((g, i) => {
+    const li = document.createElement("li");
+    const dt = new Date(g.date + "T23:59:00+03:00");
+    let extra;
+    if (target) {
+      const diff = Math.round(Math.abs(new Date(g.date + "T12:00:00+03:00") - target) / 86400000);
+      extra = diff === 0 ? "tam isabet! 🎯" : `${diff} gün farkla`;
+      if (i === 0) li.classList.add("win");
+    } else {
+      const left = Math.ceil((dt - new Date()) / 86400000);
+      extra = left > 0 ? `${left} gün sonra` : "tarih geçti";
+    }
+    li.innerHTML = `<span>${i === 0 && target ? "🥇 " : ""}${g.name.replace(/[<>&]/g, "")}</span><span>${new Date(g.date).toLocaleDateString("tr-TR", { day: "numeric", month: "long" })} <small>(${extra})</small></span>`;
+    $("guessList").appendChild(li);
+  });
+}
+$("gBtn").addEventListener("click", () => {
+  const name = $("gName").value.trim(), date = $("gDate").value;
+  if (!name || !date) return;
+  guesses.push({ name, date });
+  store.set("guesses", guesses);
+  $("gName").value = ""; $("gDate").value = "";
+  renderGuesses();
+});
+
+/* ---------- 5. Bahis ---------- */
+const OPTIONS = [["yes", "Teslim eder 🏁"], ["no", "Etmez 🙈"], ["gone", "Bir daha konuşulmaz 👻"]];
+let myVote = store.get("myVote", null);
+let tally = store.get("tally", { yes: 0, no: 0, gone: 0 });
+function renderVotes() {
+  const total = Object.values(tally).reduce((a, b) => a + b, 0);
+  $("votes").innerHTML = "";
+  OPTIONS.forEach(([key, label]) => {
+    const pct = total ? Math.round((tally[key] / total) * 100) : 0;
+    const b = document.createElement("button");
+    b.className = "vote" + (myVote === key ? " mine" : "");
+    b.innerHTML = `<i style="width:${pct}%"></i><span>${label}</span><span>${pct}% (${tally[key]})</span>`;
+    b.addEventListener("click", () => {
+      if (myVote) tally[myVote]--;
+      myVote = myVote === key ? null : key;
+      if (myVote) tally[myVote]++;
+      store.set("myVote", myVote); store.set("tally", tally);
+      renderVotes();
+    });
+    $("votes").appendChild(b);
+  });
+}
+
+/* ---------- 6. Mazeret üretici ---------- */
+const EXCUSES = [
+  "Vize haftası, oyun bekleyebilir.",
+  "Node modülleri yüklenmiyor.",
+  "Bug değil, feature.",
+  "Önce aero bitsin, sonra oyun.",
+  "Canvas'ı yanlış çizmişim, baştan başlıyorum.",
+  "Wi‑Fi kesildi, Stack Overflow'a ulaşamadım.",
+  "Oyun hazır aslında, sadece henüz yazmadım.",
+  "Bilgisayar güncelleme yaptı, 2 gün sürdü.",
+  "Takım toplantısı uzadı, sonra uyuyakaldım.",
+  "Oyunun fiziğini Formula Student kurallarına göre yazıyorum.",
+  "Git push ettim ama yanlış repoya.",
+  "Söz verdim ama hangi yıl olduğunu belirtmemiştim.",
+  "2 gün dedim, hangi gezegende 2 gün onu söylemedim.",
+  "Kaptan olmak çok yoruyor, oyun için vakit kalmıyor.",
+];
+let lastExcuse = -1;
+$("excuseBtn").addEventListener("click", () => {
+  let i;
+  do { i = Math.floor(Math.random() * EXCUSES.length); } while (i === lastExcuse);
+  lastExcuse = i;
+  $("excuse").textContent = "“" + EXCUSES[i] + "”";
+});
+
+/* ---------- 8. Konfeti (COMPLETED_AT doluysa) ---------- */
+function confetti() {
+  const c = $("confetti"), ctx = c.getContext("2d");
+  const resize = () => { c.width = innerWidth; c.height = innerHeight; };
+  resize(); addEventListener("resize", resize);
+  const colors = ["#00a884", "#ffb020", "#ff4d4f", "#53bdeb", "#ffffff", "#c77dff"];
+  const P = Array.from({ length: 220 }, () => ({
+    x: Math.random() * c.width, y: -Math.random() * c.height,
+    w: 6 + Math.random() * 6, h: 10 + Math.random() * 8,
+    vy: 2 + Math.random() * 4, vx: -1.5 + Math.random() * 3,
+    r: Math.random() * Math.PI, vr: -.2 + Math.random() * .4,
+    col: colors[Math.floor(Math.random() * colors.length)],
+  }));
+  const end = performance.now() + 8000;
+  (function frame(t) {
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (const p of P) {
+      p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      if (p.y > c.height && t < end) p.y = -10;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (t < end + 3000) requestAnimationFrame(frame); else ctx.clearRect(0, 0, c.width, c.height);
+  })(performance.now());
+}
+
+/* ---------- başlat ---------- */
+initChat();
+renderGuesses();
+renderVotes();
+renderTimers();
+renderBar();
+if (!DONE) setInterval(() => { renderTimers(); renderBar(); }, 1000);
+if (DONE) {
+  $("sendBtn").textContent = 'Mert\'i tebrik et 🎉';
+  confetti();
+}
+</script>
+</body>
+</html>
