@@ -5,175 +5,299 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kaptan Mert mi?</title>
 <meta name="description" content="Mert oyunu ne zaman teslim edecek? Canlı sayaç.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b141a;
-    --panel: #111b21;
-    --panel2: #202c33;
-    --text: #e9edef;
-    --muted: #8696a0;
-    --green: #00a884;
-    --in: #202c33;
-    --out: #005c4b;
-    --red: #ff4d4f;
-    --blue: #53bdeb;
-    --chat-bg: #0b141a;
-  }
-  @media (prefers-color-scheme: light) {
-    :root {
-      --bg: #e9e4dc;
-      --panel: #ffffff;
-      --panel2: #f0f2f5;
-      --text: #111b21;
-      --muted: #667781;
-      --in: #ffffff;
-      --out: #d9fdd3;
-      --chat-bg: #efeae2;
-    }
+    --bg: #0a0618;
+    --panel: #150d2e;
+    --panel2: #1f1442;
+    --text: #f1ecff;
+    --muted: #9b8fc7;
+    --pink: #ff2e93;
+    --cyan: #19f0ff;
+    --yellow: #ffe14d;
+    --green: #39ff88;
+    --red: #ff3b4e;
+    --pixel: "Press Start 2P", ui-monospace, "Courier New", monospace;
+    --body: "Chakra Petch", ui-monospace, "Segoe UI", sans-serif;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.4;
+    margin: 0; color: var(--text); font-family: var(--body); line-height: 1.45;
+    background: var(--bg); min-height: 100vh; overflow-x: hidden;
   }
-  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; display: grid; gap: 20px; }
-  h1 { font-size: 1.5rem; margin: 8px 0 0; text-align: center; }
-  .sub { text-align: center; color: var(--muted); margin: 0; font-size: .9rem; }
-  .card { background: var(--panel); border-radius: 14px; padding: 18px; }
-  .card h2 { margin: 0 0 12px; font-size: 1rem; color: var(--muted); font-weight: 600; letter-spacing: .02em; text-transform: uppercase; }
+  /* retro zemin: gradyan + hareketli perspektif ızgara */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -3;
+    background: radial-gradient(ellipse at 50% 0%, #3a1170 0%, #140a2e 45%, #0a0618 80%);
+  }
+  .grid-floor {
+    position: fixed; left: -50%; right: -50%; bottom: 0; height: 55vh; z-index: -2;
+    background-image:
+      linear-gradient(var(--pink) 1px, transparent 1px),
+      linear-gradient(90deg, var(--pink) 1px, transparent 1px);
+    background-size: 60px 60px; opacity: .22;
+    transform: perspective(400px) rotateX(62deg); transform-origin: bottom;
+    animation: floor 2s linear infinite;
+    mask-image: linear-gradient(to top, #000 20%, transparent 95%);
+  }
+  @keyframes floor { to { background-position: 0 60px; } }
+  /* CRT tarama çizgileri */
+  .scan {
+    position: fixed; inset: 0; z-index: 50; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px);
+    mix-blend-mode: multiply;
+  }
 
-  /* counters */
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 72px; display: grid; gap: 26px; }
+
+  /* ---- hero ---- */
+  .hero { text-align: center; padding-top: 12px; }
+  .insert { font-family: var(--pixel); font-size: .6rem; color: var(--yellow); animation: blink 1.1s steps(2, start) infinite; }
+  h1 {
+    font-family: var(--pixel); font-weight: 400; margin: 14px 0 10px;
+    font-size: clamp(1.4rem, 7vw, 2.6rem); line-height: 1.25; color: #fff;
+    text-shadow: 0 0 6px var(--pink), 0 0 18px var(--pink), 3px 3px 0 var(--cyan);
+    animation: glitch 5s infinite;
+  }
+  h1 em { font-style: normal; color: var(--yellow); }
+  @keyframes glitch {
+    0%, 92%, 100% { transform: none; }
+    93% { transform: translate(3px, -2px) skewX(6deg); }
+    95% { transform: translate(-3px, 2px) skewX(-6deg); }
+    97% { transform: translate(2px, 1px); }
+  }
+  .sub { color: var(--muted); font-size: .85rem; margin: 0; letter-spacing: .08em; text-transform: uppercase; }
+
+  /* ---- ortak panel (piksel çerçeve) ---- */
+  .panel {
+    position: relative; background: var(--panel); padding: 18px;
+    border: 3px solid var(--cyan);
+    box-shadow: 0 0 0 3px #000, 0 0 22px rgba(25,240,255,.35), inset 0 0 24px rgba(25,240,255,.08);
+  }
+  .panel.pink { border-color: var(--pink); box-shadow: 0 0 0 3px #000, 0 0 22px rgba(255,46,147,.4), inset 0 0 24px rgba(255,46,147,.08); }
+  .panel.yellow { border-color: var(--yellow); box-shadow: 0 0 0 3px #000, 0 0 22px rgba(255,225,77,.3), inset 0 0 24px rgba(255,225,77,.07); }
+  .panel.green { border-color: var(--green); box-shadow: 0 0 0 3px #000, 0 0 22px rgba(57,255,136,.35), inset 0 0 24px rgba(57,255,136,.07); }
+  .tag {
+    position: absolute; top: -13px; left: 14px; background: #000; color: var(--cyan);
+    font-family: var(--pixel); font-size: .55rem; padding: 6px 10px; letter-spacing: .05em;
+  }
+  .pink > .tag { color: var(--pink); } .yellow > .tag { color: var(--yellow); } .green > .tag { color: var(--green); }
+
+  /* ---- pist ---- */
+  .track { position: relative; height: 96px; background: #1a1a24; border-top: 4px solid #fff; border-bottom: 4px solid #fff; overflow: hidden; }
+  .track::before { /* kenar şeritleri (kırmızı-beyaz kerb) */
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px;
+    background: repeating-linear-gradient(90deg, var(--red) 0 20px, #fff 20px 40px);
+  }
+  .track::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: repeating-linear-gradient(90deg, #fff 0 20px, var(--red) 20px 40px); }
+  .lane { position: absolute; left: 0; right: 0; top: 46px; height: 4px;
+    background: repeating-linear-gradient(90deg, #fff 0 24px, transparent 24px 48px);
+    animation: lane .5s linear infinite; opacity: .7; }
+  .track.stuck .lane { animation: none; }
+  @keyframes lane { to { background-position: -48px 0; } }
+  .finish {
+    position: absolute; right: 0; top: 6px; bottom: 6px; width: 36px;
+    background:
+      conic-gradient(#fff 25%, #000 0 50%, #fff 0 75%, #000 0) 0 0/18px 18px;
+  }
+  .car { position: absolute; top: 26px; font-size: 2.4rem; line-height: 1; transform: scaleX(-1); transition: left 1.2s ease-out; filter: drop-shadow(0 0 8px var(--cyan)); }
+  .track.stuck .car { animation: idle .25s linear infinite; }
+  @keyframes idle { 50% { transform: scaleX(-1) translateY(2px); } }
+  .smoke { position: absolute; top: 40px; font-size: 1rem; opacity: .7; animation: smoke 1.6s ease-out infinite; }
+  @keyframes smoke { from { transform: translate(0,0); opacity: .8; } to { transform: translate(-26px,-26px) scale(1.8); opacity: 0; } }
+  .track-label { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: .5rem; color: var(--muted); margin-top: 10px; }
+
+  /* ---- sayaçlar (HUD) ---- */
+  .hud-title { font-family: var(--pixel); font-size: .6rem; margin: 0 0 12px; color: var(--yellow); display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .hud-title + .timer { margin-bottom: 20px; }
   .timer { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
-  .timer div { background: var(--panel2); border-radius: 10px; padding: 12px 4px; }
-  .timer b { display: block; font-size: 1.8rem; font-variant-numeric: tabular-nums; }
-  .timer span { font-size: .75rem; color: var(--muted); }
-  .late .timer b { color: var(--red); }
-  .badge {
-    display: inline-block; background: var(--red); color: #fff; font-weight: 700;
-    padding: 2px 10px; border-radius: 999px; font-size: .75rem; margin-left: 8px;
-    animation: blink 1s steps(2, start) infinite;
-  }
+  .timer div { background: #000; border: 2px solid var(--cyan); padding: 12px 2px 8px; box-shadow: inset 0 0 14px rgba(25,240,255,.25); }
+  .timer b { display: block; font-family: var(--pixel); font-weight: 400; font-size: clamp(1rem, 5.5vw, 1.8rem); color: var(--cyan); text-shadow: 0 0 10px var(--cyan); font-variant-numeric: tabular-nums; }
+  .timer span { display: block; margin-top: 8px; font-family: var(--pixel); font-size: .45rem; color: var(--muted); }
+  .late .timer.hot div { border-color: var(--red); box-shadow: inset 0 0 14px rgba(255,59,78,.35); }
+  .late .timer.hot b { color: var(--red); text-shadow: 0 0 10px var(--red); }
+  .badge { font-family: var(--pixel); font-size: .55rem; background: var(--red); color: #fff; padding: 5px 8px; animation: blink .8s steps(2, start) infinite; }
   @keyframes blink { to { visibility: hidden; } }
-  .done-banner { text-align: center; }
-  .done-banner .big { font-size: 1.4rem; font-weight: 700; margin: 6px 0; }
-  .done-banner .small { color: var(--muted); font-size: .9rem; }
+  .gameover { text-align: center; margin-top: 18px; }
+  .gameover .go { font-family: var(--pixel); font-size: clamp(.9rem, 4.5vw, 1.4rem); color: var(--red); text-shadow: 0 0 12px var(--red); animation: glitch 3s infinite; }
+  .continue { font-family: var(--pixel); font-size: .6rem; color: var(--yellow); margin-top: 12px; }
+  .win-screen { text-align: center; }
+  .win-screen .big { font-family: var(--pixel); font-size: clamp(.8rem, 4vw, 1.2rem); line-height: 1.7; color: var(--green); text-shadow: 0 0 12px var(--green); margin: 10px 0; }
+  .win-screen .small { color: var(--muted); font-size: .85rem; margin: 4px 0; }
 
-  /* whatsapp */
-  .wa { padding: 0; overflow: hidden; }
-  .wa-head { background: var(--panel2); display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
-  .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green); display: grid; place-items: center; font-weight: 700; color: #fff; }
-  .wa-head .name { font-weight: 600; }
-  .wa-head .status { font-size: .75rem; color: var(--muted); }
-  .wa-body {
-    background: var(--chat-bg); padding: 14px 12px; display: flex; flex-direction: column; gap: 6px;
-    min-height: 220px; max-height: 420px; overflow-y: auto;
-  }
-  .day { align-self: center; background: var(--panel2); color: var(--muted); font-size: .72rem; padding: 3px 10px; border-radius: 8px; }
-  .sys { align-self: center; background: #1f2c34; color: #ffd279; font-size: .72rem; padding: 4px 10px; border-radius: 8px; text-align: center; max-width: 90%; }
-  @media (prefers-color-scheme: light) { .sys { background: #fff5c4; color: #54656f; } }
-  .msg { max-width: 82%; padding: 6px 9px 4px; border-radius: 8px; background: var(--in); position: relative; word-wrap: break-word; }
-  .msg.out { align-self: flex-end; background: var(--out); }
-  .msg .meta { float: right; margin: 6px 0 0 10px; font-size: .68rem; color: var(--muted); }
-  .msg .tick { color: var(--blue); margin-left: 3px; }
-  .typing { color: var(--muted); font-style: italic; font-size: .85rem; }
-  .wa-foot { background: var(--panel2); padding: 10px 14px; }
-  button {
-    font: inherit; cursor: pointer; border: 0; border-radius: 999px; padding: 10px 16px;
-    background: var(--green); color: #fff; font-weight: 600;
-  }
-  button.ghost { background: var(--panel2); color: var(--text); }
-  button:disabled { opacity: .5; cursor: default; }
-  .wa-foot button { width: 100%; }
+  /* ---- telefon / whatsapp ---- */
+  .phone { width: min(100%, 400px); margin: 0 auto; background: #000; border: 4px solid #333; border-radius: 30px; padding: 12px 8px 10px; box-shadow: 0 0 0 3px #000, 0 0 30px rgba(255,46,147,.45); }
+  .wa-head { background: #202c33; border-radius: 16px 16px 0 0; display: flex; align-items: center; gap: 10px; padding: 9px 12px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--pink); display: grid; place-items: center; font-family: var(--pixel); font-size: .75rem; color: #fff; flex: none; }
+  .wa-head .name { font-weight: 700; font-size: .92rem; color: #e9edef; }
+  .wa-head .status { font-size: .72rem; color: #8696a0; }
+  .wa-body { background: #0b141a; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; min-height: 230px; max-height: 360px; overflow-y: auto; }
+  .day { align-self: center; background: #202c33; color: #8696a0; font-size: .7rem; padding: 3px 10px; border-radius: 8px; }
+  .sys { align-self: center; background: #1f2c34; color: #ffd279; font-size: .72rem; padding: 4px 10px; border-radius: 8px; text-align: center; max-width: 92%; }
+  .msg { max-width: 84%; padding: 6px 9px 4px; border-radius: 8px; background: #202c33; color: #e9edef; font-size: .92rem; animation: pop .25s ease-out; }
+  .msg.out { align-self: flex-end; background: #005c4b; }
+  .msg .meta { float: right; margin: 6px 0 0 10px; font-size: .66rem; color: #8696a0; }
+  .msg .tick { color: #53bdeb; margin-left: 3px; }
+  .typing { color: #8696a0; font-style: italic; font-size: .82rem; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } }
+  .wa-foot { background: #202c33; border-radius: 0 0 16px 16px; padding: 10px; }
 
-  /* pitwall progress */
-  .bar { height: 22px; background: var(--panel2); border-radius: 999px; overflow: hidden; }
-  .bar > i { display: block; height: 100%; min-width: 3px; background: linear-gradient(90deg, var(--red), #ffb020); }
-  .bar-label { display: flex; justify-content: space-between; margin-top: 8px; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-
-  /* guess + vote */
-  .row { display: flex; gap: 8px; flex-wrap: wrap; }
-  input {
-    font: inherit; background: var(--panel2); color: var(--text); border: 1px solid transparent;
-    border-radius: 10px; padding: 10px 12px; min-width: 0; flex: 1 1 140px;
+  /* ---- butonlar (arcade) ---- */
+  .btn {
+    font-family: var(--pixel); font-size: .62rem; line-height: 1.5; cursor: pointer; border: 0; color: #000;
+    background: var(--yellow); padding: 14px 16px; width: 100%;
+    box-shadow: 0 6px 0 #a68f00, 0 8px 0 #000, 0 0 18px rgba(255,225,77,.4);
+    transition: transform .06s, box-shadow .06s;
   }
-  input:focus { outline: 2px solid var(--green); }
-  ol.guesses { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-  ol.guesses li { display: flex; justify-content: space-between; gap: 8px; background: var(--panel2); border-radius: 10px; padding: 8px 12px; font-size: .9rem; }
-  ol.guesses li.win { outline: 2px solid var(--green); }
-  ol.guesses small { color: var(--muted); }
-  .note { color: var(--muted); font-size: .78rem; margin: 10px 0 0; }
-  .votes { display: grid; gap: 10px; }
-  .vote { position: relative; text-align: left; border-radius: 10px; background: var(--panel2); color: var(--text); padding: 12px; overflow: hidden; display: flex; justify-content: space-between; font-weight: 600; }
-  .vote i { position: absolute; inset: 0 auto 0 0; background: var(--green); opacity: .3; width: 0; transition: width .4s; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active, .btn.pressed { transform: translateY(5px); box-shadow: 0 1px 0 #a68f00, 0 3px 0 #000; }
+  .btn:disabled { filter: grayscale(.8) brightness(.7); cursor: default; }
+  .btn.pink { background: var(--pink); color: #fff; box-shadow: 0 6px 0 #a3105c, 0 8px 0 #000, 0 0 18px rgba(255,46,147,.5); }
+  .btn.cyan { background: var(--cyan); box-shadow: 0 6px 0 #0a8f99, 0 8px 0 #000, 0 0 18px rgba(25,240,255,.45); }
+  .btn.green { background: var(--green); box-shadow: 0 6px 0 #14944c, 0 8px 0 #000; }
+  .btn.pink:active, .btn.cyan:active, .btn.green:active { box-shadow: 0 1px 0 #000; }
+
+  /* ---- yükleme çubuğu (segmentli) ---- */
+  .loadname { font-family: var(--pixel); font-size: .6rem; margin: 0 0 10px; color: var(--green); }
+  .bar { height: 30px; background: #000; border: 3px solid #fff; padding: 3px; }
+  .bar > i { display: block; height: 100%; min-width: 4px; background: repeating-linear-gradient(90deg, var(--green) 0 10px, transparent 10px 13px); box-shadow: 0 0 12px var(--green); transition: width .4s; }
+  .bar-label { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; font-family: var(--pixel); font-size: .5rem; color: var(--muted); }
+  .bar-label span:first-child { color: var(--yellow); }
+
+  /* ---- girdiler / skor tablosu ---- */
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .row .btn { grid-column: 1 / -1; }
+  input { font: inherit; font-family: var(--pixel); font-size: .6rem; background: #000; color: var(--cyan); border: 2px solid var(--cyan); padding: 12px 10px; min-width: 0; width: 100%; color-scheme: dark; }
+  input::placeholder { color: #5b8d92; }
+  input:focus { outline: 0; box-shadow: 0 0 12px var(--cyan); }
+  ol.guesses { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; counter-reset: r; }
+  ol.guesses li { counter-increment: r; display: flex; justify-content: space-between; gap: 8px; font-family: var(--pixel); font-size: .55rem; line-height: 1.7; padding: 8px 10px; background: #000; border-left: 4px solid var(--muted); }
+  ol.guesses li::before { content: counter(r) "."; color: var(--yellow); margin-right: 8px; }
+  ol.guesses li span:first-of-type { flex: 1; color: var(--cyan); }
+  ol.guesses li.win { border-color: var(--yellow); background: #2a2200; box-shadow: 0 0 14px rgba(255,225,77,.5); }
+  ol.guesses small { color: var(--muted); font-size: .5rem; display: block; text-align: right; }
+  ol.guesses .empty { color: var(--muted); justify-content: center; border: 0; }
+  ol.guesses .empty::before { content: none; }
+  .note { color: var(--muted); font-size: .75rem; margin: 12px 0 0; }
+
+  /* ---- bahis ---- */
+  .votes { display: grid; gap: 14px; }
+  .vote { position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 8px; text-align: left; }
+  .vote i { position: absolute; inset: 0 auto 0 0; background: rgba(0,0,0,.28); width: 0; transition: width .4s; }
   .vote span { position: relative; }
-  .vote.mine { outline: 2px solid var(--green); }
-  .excuse { font-size: 1.1rem; min-height: 3.2em; margin: 0 0 12px; }
+  .vote.mine::after { content: "◀ SEÇİLDİ"; position: absolute; right: 10px; top: -1px; font-size: .45rem; color: #fff; background: #000; padding: 2px 4px; }
 
-  canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
-  footer { text-align: center; color: var(--muted); font-size: .75rem; }
+  /* ---- mazeret slotu ---- */
+  .slot { background: #000; border: 3px solid var(--pink); min-height: 92px; display: grid; place-items: center; padding: 14px; text-align: center; margin-bottom: 14px; font-size: 1.05rem; font-weight: 600; box-shadow: inset 0 0 22px rgba(255,46,147,.35); }
+  .slot.spin { color: var(--muted); filter: blur(1px); }
+  .slot.win { color: var(--yellow); animation: pop .3s ease-out; text-shadow: 0 0 10px var(--yellow); }
+
+  /* ---- başarımlar ---- */
+  .ach { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .ach div { background: #000; border: 2px solid #3a2f66; padding: 12px 8px; text-align: center; font-size: .78rem; color: var(--muted); }
+  .ach div b { display: block; font-size: 1.6rem; margin-bottom: 4px; filter: grayscale(1); opacity: .6; }
+  .ach div strong { display: block; font-family: var(--pixel); font-size: .5rem; line-height: 1.6; margin-bottom: 4px; }
+  .ach div.on { border-color: var(--yellow); color: var(--text); box-shadow: 0 0 14px rgba(255,225,77,.4); }
+  .ach div.on b { filter: none; opacity: 1; }
+  .ach div.on strong { color: var(--yellow); }
+  .ach div.bad.on { border-color: var(--red); box-shadow: 0 0 14px rgba(255,59,78,.4); }
+  .ach div.bad.on strong { color: var(--red); }
+
+  canvas#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 40; }
+  footer { text-align: center; color: var(--muted); font-family: var(--pixel); font-size: .5rem; line-height: 2; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
+<div class="grid-floor"></div>
+<div class="scan"></div>
 <canvas id="confetti"></canvas>
+
 <main>
-  <header>
-    <h1>Kaptan Mert mi? 🏎️</h1>
+  <header class="hero">
+    <div class="insert">▶ INSERT COIN ◀</div>
+    <h1>KAPTAN<br><em>MERT</em> Mİ?</h1>
     <p class="sub">1.5 Adana Formula Student · Oyun Birimi · Pitwall</p>
   </header>
 
+  <!-- Pist -->
+  <section class="panel pink">
+    <span class="tag">PİST</span>
+    <div class="track stuck" id="track">
+      <div class="lane"></div>
+      <div class="finish"></div>
+      <span class="smoke" id="smoke">💨</span>
+      <div class="car" id="car">🏎️</div>
+    </div>
+    <div class="track-label"><span>START</span><span id="trackNote">MERT HÂLÂ BOKSTA</span><span>FINISH</span></div>
+  </section>
+
   <!-- 1. Sayaçlar / tamamlanma -->
-  <section class="card" id="timers"></section>
+  <section class="panel" id="timers"></section>
 
   <!-- 2. WhatsApp -->
-  <section class="card wa">
-    <div class="wa-head">
-      <div class="avatar">M</div>
-      <div>
-        <div class="name">Mert (Oyun Birimi Kaptanı)</div>
-        <div class="status" id="waStatus">son görülme: 19 Eylül 19:44</div>
+  <section class="panel pink">
+    <span class="tag">SON MESAJLAR</span>
+    <div class="phone">
+      <div class="wa-head">
+        <div class="avatar">M</div>
+        <div>
+          <div class="name">Mert (Oyun Birimi Kaptanı)</div>
+          <div class="status" id="waStatus">son görülme: 19 Eylül 19:44</div>
+        </div>
       </div>
+      <div class="wa-body" id="chat"></div>
+      <div class="wa-foot"><button class="btn green" id="sendBtn">MERT'E MESAJ AT</button></div>
     </div>
-    <div class="wa-body" id="chat"></div>
-    <div class="wa-foot"><button id="sendBtn">Mert'e mesaj at: "Oyun ne durumda?"</button></div>
   </section>
 
   <!-- 3. Pitwall durumu -->
-  <section class="card">
-    <h2>Pitwall oyun yüklenme durumu</h2>
+  <section class="panel green">
+    <span class="tag">YÜKLENİYOR</span>
+    <p class="loadname">PITWALL_OYUN.EXE</p>
     <div class="bar"><i id="barFill"></i></div>
-    <div class="bar-label"><span id="barPct">%0</span><span id="barNote">tahmini bitiş: belirsiz</span></div>
+    <div class="bar-label"><span id="barPct">%0</span><span id="barNote">TAHMİNİ BİTİŞ: BELİRSİZ</span></div>
   </section>
 
   <!-- 4. Tahmin oyunu -->
-  <section class="card">
-    <h2>Tahmin oyunu: Mert oyunu ne zaman teslim edecek?</h2>
+  <section class="panel yellow">
+    <span class="tag">SKOR TABLOSU</span>
+    <p class="hud-title">MERT OYUNU NE ZAMAN TESLİM EDER?</p>
     <div class="row">
-      <input id="gName" placeholder="Adın" maxlength="20">
+      <input id="gName" placeholder="İSİM" maxlength="12">
       <input id="gDate" type="date">
-      <button id="gBtn">Tahmin et</button>
+      <button class="btn" id="gBtn">TAHMİNİ KAYDET</button>
     </div>
     <ol class="guesses" id="guessList"></ol>
     <p class="note">Tahminler sadece bu tarayıcıda saklanır.</p>
   </section>
 
   <!-- 5. Bahis -->
-  <section class="card">
-    <h2>Bahis: Mert ne yapar?</h2>
+  <section class="panel">
+    <span class="tag">BAHİS MASASI</span>
+    <p class="hud-title">MERT NE YAPAR?</p>
     <div class="votes" id="votes"></div>
     <p class="note">Oylar sadece bu tarayıcıda sayılır.</p>
   </section>
 
   <!-- 6. Mazeret üretici -->
-  <section class="card">
-    <h2>Mazeret üretici</h2>
-    <p class="excuse" id="excuse">Mert'in bir sonraki bahanesi için butona bas.</p>
-    <button id="excuseBtn">Mazeret üret</button>
+  <section class="panel pink">
+    <span class="tag">MAZERET MAKİNESİ</span>
+    <div class="slot" id="excuse">Kolu çek, Mert'in sıradaki bahanesini gör!</div>
+    <button class="btn pink" id="excuseBtn">🎰 KOLU ÇEK</button>
   </section>
 
-  <footer>Şaka amaçlıdır, Mert'i seviyoruz. 💚</footer>
+  <!-- Başarımlar -->
+  <section class="panel yellow">
+    <span class="tag">BAŞARIMLAR</span>
+    <div class="ach" id="ach"></div>
+  </section>
+
+  <footer>ŞAKA AMAÇLIDIR · MERT'İ SEVİYORUZ 💚<br>© 2026 ADANA FS</footer>
 </main>
 
 <script>
@@ -197,20 +321,19 @@ const $ = (id) => document.getElementById(id);
 const pad = (n) => String(n).padStart(2, "0");
 
 function split(ms) {
-  const neg = ms < 0;
   let s = Math.floor(Math.abs(ms) / 1000);
   const d = Math.floor(s / 86400); s %= 86400;
   const h = Math.floor(s / 3600);  s %= 3600;
   const m = Math.floor(s / 60);    s %= 60;
-  return { neg, d, h, m, s };
+  return { d, h, m, s };
 }
-function timerHTML(ms) {
+function timerHTML(ms, hot) {
   const t = split(ms);
-  return `<div class="timer">
-    <div><b>${t.d}</b><span>gün</span></div>
-    <div><b>${pad(t.h)}</b><span>saat</span></div>
-    <div><b>${pad(t.m)}</b><span>dakika</span></div>
-    <div><b>${pad(t.s)}</b><span>saniye</span></div></div>`;
+  return `<div class="timer${hot ? " hot" : ""}">
+    <div><b>${t.d}</b><span>GÜN</span></div>
+    <div><b>${pad(t.h)}</b><span>SAAT</span></div>
+    <div><b>${pad(t.m)}</b><span>DAKİKA</span></div>
+    <div><b>${pad(t.s)}</b><span>SANİYE</span></div></div>`;
 }
 function humanDuration(ms) {
   const t = split(ms);
@@ -224,16 +347,18 @@ function humanDuration(ms) {
 const trDate = (d) => d.toLocaleString("tr-TR", { timeZone: "Europe/Istanbul", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 /* ---------- 1. Sayaçlar ---------- */
+let continueN = 9;
 function renderTimers() {
   const now = DONE || new Date();
   const sincePromise = now - PROMISE_AT;
   const overdue = now - DEADLINE_AT;
   if (DONE) {
     const early = DONE <= DEADLINE_AT;
-    $("timers").className = "card done-banner";
+    $("timers").className = "panel green win-screen";
     $("timers").innerHTML = `
-      <div style="font-size:2.4rem">🏁🎉</div>
-      <div class="big">Mert oyunu ${humanDuration(sincePromise)} sürede tamamladı!</div>
+      <span class="tag">SEVİYE TAMAMLANDI</span>
+      <div style="font-size:2.4rem">🏁🏆🎉</div>
+      <div class="big">MERT OYUNU<br>${humanDuration(sincePromise).toLocaleUpperCase("tr")}<br>SÜREDE TAMAMLADI!</div>
       <div class="small">Söz: ${trDate(PROMISE_AT)} · Teslim: ${trDate(DONE)}</div>
       <div class="small">${early
         ? "Süre dolmadan teslim etti, kaptanlığı hak etti. 👑"
@@ -241,11 +366,30 @@ function renderTimers() {
     return;
   }
   const late = overdue > 0;
-  $("timers").className = "card" + (late ? " late" : "");
+  $("timers").className = "panel" + (late ? " late" : "");
   $("timers").innerHTML = `
-    <h2>Sözden bu yana geçen süre</h2>${timerHTML(sincePromise)}
-    <h2 style="margin-top:18px">${late ? "Teslim süresi aşıldı" : "Teslime kalan süre"}${late ? '<span class="badge">GECİKME</span>' : ""}</h2>
-    ${timerHTML(late ? overdue : -overdue)}`;
+    <span class="tag">${late ? "⚠ UYARI" : "HUD"}</span>
+    <p class="hud-title">SÖZDEN BU YANA GEÇEN SÜRE</p>${timerHTML(sincePromise, false)}
+    <p class="hud-title">${late ? "TESLİM SÜRESİ AŞILDI" : "TESLİME KALAN SÜRE"}${late ? '<span class="badge">GECİKME</span>' : ""}</p>
+    ${timerHTML(late ? overdue : -overdue, late)}
+    ${late ? `<div class="gameover"><div class="go">GAME OVER</div><div class="continue">DEVAM? ${continueN}</div></div>` : ""}`;
+}
+// CONTINUE? geri sayımı 9..0 döner
+if (!DONE) setInterval(() => { continueN = (continueN + 9) % 10; }, 1000);
+
+/* ---------- Pist ---------- */
+function renderTrack(pct) {
+  const car = $("car"), smoke = $("smoke"), track = $("track");
+  if (DONE) {
+    track.classList.remove("stuck");
+    car.style.left = "calc(100% - 100px)";
+    smoke.style.display = "none";
+    $("trackNote").textContent = "MERT FINISH'TE! 🏁";
+    return;
+  }
+  const left = 12 + Math.min(pct, 100) * 0.6; // sıfıra yakın: hep startta
+  car.style.left = left + "px";
+  smoke.style.left = Math.max(left - 18, 0) + "px";
 }
 
 /* ---------- 2. WhatsApp ---------- */
@@ -273,6 +417,7 @@ function initChat() {
   if (DONE) {
     sysMsg(`✅ Mert oyunu tamamladı · ${trDate(DONE)}`);
     $("waStatus").textContent = "çevrimiçi";
+    $("sendBtn").textContent = "MERT'İ TEBRİK ET 🎉";
   } else {
     const days = Math.floor((new Date() - READY_AT) / 86400000);
     sysMsg(`⏳ Mert ${days} gündür bu mesajdan sonra oyun teslim etmedi`);
@@ -285,12 +430,12 @@ $("sendBtn").addEventListener("click", () => {
   bubble(DONE ? "Tebrikler kaptan! 🎉" : "Oyun ne durumda?", hhmm(new Date()), true);
   const t = document.createElement("div");
   t.className = "msg typing"; t.textContent = "Mert yazıyor…";
-  setTimeout(() => $("chat").appendChild(t), 700);
+  setTimeout(() => { $("chat").appendChild(t); $("chat").scrollTop = $("chat").scrollHeight; }, 700);
   setTimeout(() => {
     t.remove();
     bubble(DONE ? "Sağ ol, söz verdim yaptım 😎" : "2 güne hazır", hhmm(new Date()));
     sending = false; $("sendBtn").disabled = false;
-    $("chat").scrollTop = $("chat").scrollHeight;
+    unlock("ask");
   }, 2500);
 });
 
@@ -298,16 +443,17 @@ $("sendBtn").addEventListener("click", () => {
 function renderBar() {
   if (DONE) {
     $("barFill").style.width = "100%";
-    $("barFill").style.background = "var(--green)";
     $("barPct").textContent = "%100";
-    $("barNote").textContent = "yükleme tamamlandı 🏆";
+    $("barNote").textContent = "YÜKLEME TAMAMLANDI 🏆";
+    renderTrack(100);
     return;
   }
   const elapsedS = (new Date() - READY_AT) / 1000;
   const pct = elapsedS * 1e-7; // absürt derecede yavaş
   $("barFill").style.width = Math.max(pct, 0.3) + "%";
   $("barPct").textContent = "%" + pct.toFixed(6).replace(".", ",");
-  $("barNote").textContent = "tahmini bitiş: belirsiz";
+  $("barNote").textContent = "TAHMİNİ BİTİŞ: BELİRSİZ";
+  renderTrack(pct);
 }
 
 /* ---------- yardımcı: localStorage ---------- */
@@ -324,19 +470,28 @@ function renderGuesses() {
   if (target) list.sort((a, b) => Math.abs(new Date(a.date) - target) - Math.abs(new Date(b.date) - target));
   else list.sort((a, b) => new Date(a.date) - new Date(b.date));
   $("guessList").innerHTML = "";
+  if (!list.length) {
+    const li = document.createElement("li");
+    li.className = "empty"; li.textContent = "HENÜZ TAHMİN YOK";
+    $("guessList").appendChild(li);
+  }
   list.forEach((g, i) => {
     const li = document.createElement("li");
     const dt = new Date(g.date + "T23:59:00+03:00");
     let extra;
     if (target) {
       const diff = Math.round(Math.abs(new Date(g.date + "T12:00:00+03:00") - target) / 86400000);
-      extra = diff === 0 ? "tam isabet! 🎯" : `${diff} gün farkla`;
+      extra = diff === 0 ? "TAM İSABET! 🎯" : `${diff} GÜN FARKLA`;
       if (i === 0) li.classList.add("win");
     } else {
       const left = Math.ceil((dt - new Date()) / 86400000);
-      extra = left > 0 ? `${left} gün sonra` : "tarih geçti";
+      extra = left > 0 ? `${left} GÜN SONRA` : "TARİH GEÇTİ";
     }
-    li.innerHTML = `<span>${i === 0 && target ? "🥇 " : ""}${g.name.replace(/[<>&]/g, "")}</span><span>${new Date(g.date).toLocaleDateString("tr-TR", { day: "numeric", month: "long" })} <small>(${extra})</small></span>`;
+    const name = document.createElement("span");
+    name.textContent = (i === 0 && target ? "🥇 " : "") + g.name.toLocaleUpperCase("tr");
+    const when = document.createElement("span");
+    when.innerHTML = `${new Date(g.date).toLocaleDateString("tr-TR", { day: "numeric", month: "short" }).toLocaleUpperCase("tr")}<small>${extra}</small>`;
+    li.append(name, when);
     $("guessList").appendChild(li);
   });
 }
@@ -347,32 +502,34 @@ $("gBtn").addEventListener("click", () => {
   store.set("guesses", guesses);
   $("gName").value = ""; $("gDate").value = "";
   renderGuesses();
+  unlock("guess");
 });
 
 /* ---------- 5. Bahis ---------- */
-const OPTIONS = [["yes", "Teslim eder 🏁"], ["no", "Etmez 🙈"], ["gone", "Bir daha konuşulmaz 👻"]];
+const OPTIONS = [["yes", "TESLİM EDER 🏁", "green"], ["no", "ETMEZ 🙈", "pink"], ["gone", "BİR DAHA KONUŞULMAZ 👻", "cyan"]];
 let myVote = store.get("myVote", null);
 let tally = store.get("tally", { yes: 0, no: 0, gone: 0 });
 function renderVotes() {
   const total = Object.values(tally).reduce((a, b) => a + b, 0);
   $("votes").innerHTML = "";
-  OPTIONS.forEach(([key, label]) => {
+  OPTIONS.forEach(([key, label, color]) => {
     const pct = total ? Math.round((tally[key] / total) * 100) : 0;
     const b = document.createElement("button");
-    b.className = "vote" + (myVote === key ? " mine" : "");
-    b.innerHTML = `<i style="width:${pct}%"></i><span>${label}</span><span>${pct}% (${tally[key]})</span>`;
+    b.className = `btn vote ${color}` + (myVote === key ? " mine" : "");
+    b.innerHTML = `<i style="width:${pct}%"></i><span>${label}</span><span>%${pct} (${tally[key]})</span>`;
     b.addEventListener("click", () => {
       if (myVote) tally[myVote]--;
       myVote = myVote === key ? null : key;
       if (myVote) tally[myVote]++;
       store.set("myVote", myVote); store.set("tally", tally);
       renderVotes();
+      if (myVote) unlock("bet");
     });
     $("votes").appendChild(b);
   });
 }
 
-/* ---------- 6. Mazeret üretici ---------- */
+/* ---------- 6. Mazeret makinesi ---------- */
 const EXCUSES = [
   "Vize haftası, oyun bekleyebilir.",
   "Node modülleri yüklenmiyor.",
@@ -389,20 +546,60 @@ const EXCUSES = [
   "2 gün dedim, hangi gezegende 2 gün onu söylemedim.",
   "Kaptan olmak çok yoruyor, oyun için vakit kalmıyor.",
 ];
-let lastExcuse = -1;
+let lastExcuse = -1, spinning = false;
 $("excuseBtn").addEventListener("click", () => {
-  let i;
-  do { i = Math.floor(Math.random() * EXCUSES.length); } while (i === lastExcuse);
-  lastExcuse = i;
-  $("excuse").textContent = "“" + EXCUSES[i] + "”";
+  if (spinning) return;
+  spinning = true; $("excuseBtn").disabled = true;
+  const slot = $("excuse");
+  slot.className = "slot spin";
+  let n = 0;
+  const iv = setInterval(() => {
+    slot.textContent = EXCUSES[Math.floor(Math.random() * EXCUSES.length)];
+    if (++n >= 14) {
+      clearInterval(iv);
+      let i;
+      do { i = Math.floor(Math.random() * EXCUSES.length); } while (i === lastExcuse);
+      lastExcuse = i;
+      slot.className = "slot win";
+      slot.textContent = "“" + EXCUSES[i] + "”";
+      spinning = false; $("excuseBtn").disabled = false;
+      unlock("excuse");
+    }
+  }, 90);
 });
+
+/* ---------- Başarımlar ---------- */
+const ACH = [
+  { id: "visit",  icon: "🎮", name: "OYUNA GİRDİN",    desc: "Siteyi açtın.", auto: true },
+  { id: "late",   icon: "⏰", name: "GEÇ KALDI",        desc: "Mert süreyi kaçırdı.", auto: () => !DONE && new Date() > DEADLINE_AT, bad: true },
+  { id: "ask",    icon: "💬", name: "SORMAYA DEVAM",   desc: "Mert'e mesaj attın." },
+  { id: "guess",  icon: "🔮", name: "KAHİN",            desc: "Bir tahmin yaptın." },
+  { id: "bet",    icon: "🎲", name: "BAHİSÇİ",          desc: "Bir bahis oynadın." },
+  { id: "excuse", icon: "🎰", name: "MAZERET AVCISI",   desc: "Mazeret makinesini çevirdin." },
+  { id: "done",   icon: "🏆", name: "SÖZÜNÜ TUTTU",     desc: "Mert oyunu teslim etti!", auto: () => !!DONE },
+];
+let unlocked = new Set(store.get("ach", []));
+function renderAch() {
+  $("ach").innerHTML = "";
+  ACH.forEach((a) => {
+    const on = unlocked.has(a.id) || a.auto === true || (typeof a.auto === "function" && a.auto());
+    const el = document.createElement("div");
+    el.className = (on ? "on " : "") + (a.bad ? "bad" : "");
+    el.innerHTML = `<b>${on ? a.icon : "🔒"}</b><strong>${a.name}</strong>${on ? a.desc : "???"}`;
+    $("ach").appendChild(el);
+  });
+}
+function unlock(id) {
+  if (unlocked.has(id)) return;
+  unlocked.add(id); store.set("ach", [...unlocked]); renderAch();
+}
 
 /* ---------- 8. Konfeti (COMPLETED_AT doluysa) ---------- */
 function confetti() {
   const c = $("confetti"), ctx = c.getContext("2d");
   const resize = () => { c.width = innerWidth; c.height = innerHeight; };
   resize(); addEventListener("resize", resize);
-  const colors = ["#00a884", "#ffb020", "#ff4d4f", "#53bdeb", "#ffffff", "#c77dff"];
+  const colors = ["#39ff88", "#ffe14d", "#ff2e93", "#19f0ff", "#ffffff", "#c77dff"];
   const P = Array.from({ length: 220 }, () => ({
     x: Math.random() * c.width, y: -Math.random() * c.height,
     w: 6 + Math.random() * 6, h: 10 + Math.random() * 8,
@@ -430,11 +627,9 @@ renderGuesses();
 renderVotes();
 renderTimers();
 renderBar();
+renderAch();
 if (!DONE) setInterval(() => { renderTimers(); renderBar(); }, 1000);
-if (DONE) {
-  $("sendBtn").textContent = 'Mert\'i tebrik et 🎉';
-  confetti();
-}
+if (DONE) confetti();
 </script>
 </body>
 </html>
